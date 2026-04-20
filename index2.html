@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluación en Línea</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #eaf2ff, #f8fbff);
+      color: #1f2937;
+    }
+
+    .contenedor {
+      max-width: 900px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    h1 {
+      text-align: center;
+      color: #0f172a;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .subtitulo {
+      text-align: center;
+      color: #64748b;
+      margin-bottom: 30px;
+    }
+
+    .bloque {
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    .info-superior {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      padding: 15px 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .temporizador {
+      font-size: 18px;
+      font-weight: bold;
+      color: #dc2626;
+    }
+
+    .progreso {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1d4ed8;
+    }
+
+    .pregunta {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+
+    .pregunta h3 {
+      margin-top: 0;
+      color: #0f172a;
+    }
+
+    .opcion {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .opcion:hover {
+      background: #eef4ff;
+    }
+
+    .botones {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    .resultado {
+      text-align: center;
+      margin-top: 30px;
+      padding: 25px;
+      border-radius: 16px;
+      display: none;
+    }
+
+    .resultado.aprobado {
+      background: #ecfdf5;
+      border: 2px solid #10b981;
+    }
+
+    .resultado.reprobado {
+      background: #fef2f2;
+      border: 2px solid #ef4444;
+    }
+
+    .resultado img {
+      width: 100%;
+      max-width: 440px;
+      margin-top: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .admin-panel {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 14px;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      display: none;
+    }
+
+    .admin-panel h2 {
+      margin-top: 0;
+      color: #9a3412;
+    }
+
+    .detalle-item {
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #fed7aa;
+    }
+
+    .correcta {
+      color: #15803d;
+      font-weight: bold;
+    }
+
+    .incorrecta {
+      color: #b91c1c;
+      font-weight: bold;
+    }
+
+    .pantalla-inicial {
+      text-align: center;
+    }
+
+    .oculto {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .contenedor {
+        margin: 15px;
+        padding: 20px;
+      }
+
+      .info-superior {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .resultado img {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h1 id="titulo">Evaluación en Línea</h1>
+    <p class="subtitulo">Complete la evaluación dentro del tiempo establecido.</p>
+
+    <div id="pantallaInicial" class="pantalla-inicial">
+      <div class="bloque">
+        <label for="nombre">Nombre del estudiante</label>
+        <input type="text" id="nombre" placeholder="Escriba su nombre completo" />
+      </div>
+
+      <div class="botones">
+        <button onclick="iniciarEvaluacion()">Iniciar evaluación</button>
+      </div>
+    </div>
+
+    <div id="pantallaEvaluacion" class="oculto">
+      <div class="info-superior">
+        <div class="temporizador">Tiempo restante: <span id="tiempo">20:00</span></div>
+        <div class="progreso">Respondidas: <span id="respondidas">0</span> / <span id="totalPreguntas">0</span></div>
+      </div>
+
+      <form id="formularioPreguntas"></form>
+
+      <div class="botones">
+        <button type="button" onclick="finalizarEvaluacion()">Finalizar evaluación</button>
+      </div>
+    </div>
+
+    <div id="resultado" class="resultado">
+      <h2 id="mensajeFinal"></h2>
+      <p><strong>Estudiante:</strong> <span id="nombreMostrado"></span></p>
+      <p><strong>Nota:</strong> <span id="notaFinal"></span></p>
+      <img id="imagenResultado" src="" alt="Resultado" />
+    </div>
+
+    <div id="adminPanel" class="admin-panel">
+      <h2>Panel de Administrador</h2>
+      <div id="detalleRespuestas"></div>
+    </div>
+  </div>
+
+  <audio id="audioEvaluacion" loop>
+    <source src="audios/evaluacion.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="audioAprobado">
+    <source src="audios/aprobado.mp3" type="audio/mpeg">
+  </audio>
+
+  <audio id="audioReprobado">
+    <source src="audios/reprobado.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+const preguntas = [
+  {
+    pregunta: "¿Cuál es una ventaja principal de la computación en la nube?",
+    opciones: [
+      "Comprar hardware cada mes",
+      "Escalar recursos según la demanda",
+      "Eliminar todas las licencias",
+      "Trabajar sin Internet"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué modelo de nube ofrece recursos compartidos a través de Internet?",
+    opciones: [
+      "Nube privada",
+      "Nube híbrida",
+      "Nube pública",
+      "Nube local"
+    ],
+    correcta: 2
+  },
+  {
+    pregunta: "¿Qué tipo de nube combina infraestructura local y nube pública?",
+    opciones: [
+      "Nube privada",
+      "Nube híbrida",
+      "Nube comunitaria",
+      "Nube dedicada"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "En un modelo IaaS, el cliente administra principalmente:",
+    opciones: [
+      "Solo la aplicación",
+      "Aplicación, datos, sistema operativo y configuración",
+      "Todo el centro de datos del proveedor",
+      "Solo el hardware físico"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Cuál es un ejemplo de PaaS en Azure?",
+    opciones: [
+      "Azure Virtual Machines",
+      "Azure App Service",
+      "Microsoft 365",
+      "Windows Server local"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Cuál es un ejemplo de SaaS?",
+    opciones: [
+      "Azure Storage",
+      "Azure App Service",
+      "Microsoft 365",
+      "Azure Virtual Network"
+    ],
+    correcta: 2
+  },
+  {
+    pregunta: "¿Qué significa alta disponibilidad?",
+    opciones: [
+      "Que un servicio siempre es gratis",
+      "Que un servicio está diseñado para minimizar interrupciones",
+      "Que un servicio solo funciona de noche",
+      "Que un servicio no necesita soporte"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué describe mejor la elasticidad en la nube?",
+    opciones: [
+      "Cambiar el idioma del portal",
+      "Aumentar o reducir recursos automáticamente",
+      "Hacer copias de seguridad manuales",
+      "Cambiar contraseñas frecuentemente"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué significa CapEx?",
+    opciones: [
+      "Gasto operativo",
+      "Gasto de capital inicial",
+      "Gasto mensual de licencias",
+      "Gasto variable automático"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué significa OpEx?",
+    opciones: [
+      "Gasto operativo basado en uso",
+      "Compra única de servidores",
+      "Pago de hardware físico obligatorio",
+      "Mantenimiento local permanente"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio de Azure permite crear máquinas virtuales?",
+    opciones: [
+      "Azure Functions",
+      "Azure Virtual Machines",
+      "Microsoft Entra ID",
+      "Azure DevOps"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Cuál es la función de una región de Azure?",
+    opciones: [
+      "Organizar usuarios por empresa",
+      "Definir una ubicación geográfica para servicios",
+      "Reemplazar grupos de recursos",
+      "Administrar contraseñas de usuarios"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué son las Availability Zones?",
+    opciones: [
+      "Licencias temporales de Azure",
+      "Centros de datos físicamente separados dentro de una región",
+      "Tipos de suscripciones",
+      "Servidores locales conectados a Azure"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué es un Resource Group en Azure?",
+    opciones: [
+      "Un contenedor lógico para recursos relacionados",
+      "Un grupo de usuarios administrativos",
+      "Una licencia de facturación",
+      "Una herramienta de respaldo local"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué permite una suscripción de Azure?",
+    opciones: [
+      "Organizar cobro y acceso a recursos",
+      "Reemplazar Microsoft Entra ID",
+      "Crear equipos físicos",
+      "Eliminar todas las políticas"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Cuál es la función principal de Azure Resource Manager?",
+    opciones: [
+      "Crear documentos Word",
+      "Implementar y administrar recursos en Azure",
+      "Dar soporte telefónico",
+      "Reemplazar Azure Monitor"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué servicio usarías para almacenamiento de objetos como imágenes o documentos?",
+    opciones: [
+      "Azure Blob Storage",
+      "Azure DNS",
+      "Azure Firewall",
+      "Azure Virtual Desktop"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio de Azure se usa para bases de datos relacionales administradas?",
+    opciones: [
+      "Azure SQL Database",
+      "Azure Monitor",
+      "Azure Policy",
+      "Azure CDN"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio está diseñado para ejecutar código basado en eventos?",
+    opciones: [
+      "Azure Virtual Machines",
+      "Azure Functions",
+      "Azure Advisor",
+      "Azure Blueprint"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué servicio permite hospedar aplicaciones web sin administrar servidores directamente?",
+    opciones: [
+      "Azure App Service",
+      "Azure Load Balancer",
+      "Azure Firewall",
+      "Azure Bastion"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué hace Azure Virtual Network?",
+    opciones: [
+      "Almacena archivos",
+      "Crea una red privada en Azure",
+      "Administra identidades",
+      "Genera informes financieros"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Para qué sirve un Network Security Group (NSG)?",
+    opciones: [
+      "Para filtrar tráfico de red",
+      "Para almacenar contraseñas",
+      "Para crear usuarios",
+      "Para comprimir archivos"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio de Azure protege aplicaciones web frente a ataques HTTP comunes?",
+    opciones: [
+      "Azure WAF",
+      "Azure Backup",
+      "Azure Advisor",
+      "Azure Files"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio proporciona balanceo de carga de capa 4 en Azure?",
+    opciones: [
+      "Azure Load Balancer",
+      "Azure Policy",
+      "Azure SQL",
+      "Azure Arc"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio permite entregar contenido con baja latencia a usuarios globales?",
+    opciones: [
+      "Azure CDN",
+      "Azure VPN Gateway",
+      "Azure Cost Management",
+      "Azure Policy"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio conecta una red local con Azure mediante un túnel cifrado?",
+    opciones: [
+      "Azure VPN Gateway",
+      "Azure Blob Storage",
+      "Azure Front Door",
+      "Azure Advisor"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio ofrece una conexión privada dedicada entre una red local y Azure?",
+    opciones: [
+      "ExpressRoute",
+      "VPN Gateway",
+      "Load Balancer",
+      "NSG"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio administra identidades y acceso en Azure?",
+    opciones: [
+      "Microsoft Entra ID",
+      "Azure Storage",
+      "Azure Site Recovery",
+      "Azure Files"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué hace la autenticación multifactor (MFA)?",
+    opciones: [
+      "Elimina el uso de contraseñas",
+      "Pide más de una forma de verificación",
+      "Permite acceso sin iniciar sesión",
+      "Solo funciona localmente"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué es Azure RBAC?",
+    opciones: [
+      "Un servicio de respaldo",
+      "Un modelo de control de acceso basado en roles",
+      "Un tipo de almacenamiento",
+      "Un sistema operativo de Azure"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué permite el principio de mínimo privilegio?",
+    opciones: [
+      "Dar acceso total a todos",
+      "Asignar solo el acceso necesario",
+      "Eliminar los roles de usuario",
+      "Evitar auditorías"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué hace Microsoft Defender for Cloud?",
+    opciones: [
+      "Diseña sitios web",
+      "Proporciona recomendaciones de seguridad y protección contra amenazas",
+      "Reemplaza Azure Virtual Machines",
+      "Crea grupos de recursos automáticamente"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué servicio se usa para administrar secretos, claves y certificados?",
+    opciones: [
+      "Azure Key Vault",
+      "Azure Advisor",
+      "Azure DevTest Labs",
+      "Azure Monitor"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio te ayuda a evaluar la postura de seguridad de tus recursos?",
+    opciones: [
+      "Microsoft Defender for Cloud",
+      "Azure Migrate",
+      "Azure Files",
+      "Azure DevOps"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué herramienta recopila métricas, logs y alertas en Azure?",
+    opciones: [
+      "Azure Monitor",
+      "Azure Policy",
+      "Azure Cost Management",
+      "Azure Blueprints"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué hace Azure Advisor?",
+    opciones: [
+      "Ofrece recomendaciones sobre costo, seguridad, rendimiento y confiabilidad",
+      "Crea usuarios automáticamente",
+      "Reemplaza Azure Monitor",
+      "Publica aplicaciones web"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué herramienta ayuda a estimar costos antes de implementar recursos?",
+    opciones: [
+      "Azure Pricing Calculator",
+      "Azure Monitor",
+      "Azure Sentinel",
+      "Azure Bastion"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Para qué sirve la calculadora TCO?",
+    opciones: [
+      "Para comparar costos entre entorno local y Azure",
+      "Para crear máquinas virtuales",
+      "Para administrar identidades",
+      "Para hacer monitoreo en tiempo real"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué permite Azure Cost Management?",
+    opciones: [
+      "Crear sitios web",
+      "Supervisar, analizar y optimizar costos",
+      "Administrar redes físicas",
+      "Reemplazar la suscripción"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué describe mejor un SLA?",
+    opciones: [
+      "Una contraseña de administrador",
+      "Un acuerdo de nivel de servicio",
+      "Un plan de estudios de certificación",
+      "Una región de Azure"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué servicio usa replicación para recuperar cargas ante desastres?",
+    opciones: [
+      "Azure Site Recovery",
+      "Azure DNS",
+      "Azure Policy",
+      "Azure Arc"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio se utiliza para hacer copias de seguridad en Azure?",
+    opciones: [
+      "Azure Backup",
+      "Azure RBAC",
+      "Azure Firewall",
+      "Azure Cost Management"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué tipo de almacenamiento mantiene varias copias dentro de un único centro de datos?",
+    opciones: [
+      "GRS",
+      "ZRS",
+      "LRS",
+      "RA-GRS"
+    ],
+    correcta: 2
+  },
+  {
+    pregunta: "¿Qué tipo de almacenamiento replica datos entre varias zonas de disponibilidad?",
+    opciones: [
+      "LRS",
+      "ZRS",
+      "GRS",
+      "Premium SSD"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué servicio usarías para compartir archivos mediante SMB en Azure?",
+    opciones: [
+      "Azure Files",
+      "Azure Queues",
+      "Azure Tables",
+      "Azure Functions"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué herramienta ayuda a aplicar reglas para recursos de Azure?",
+    opciones: [
+      "Azure Policy",
+      "Azure Load Balancer",
+      "Azure Files",
+      "Azure Databricks"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué hace un lock de recursos en Azure?",
+    opciones: [
+      "Cambia el nombre del recurso",
+      "Evita eliminación o modificación accidental",
+      "Aumenta la capacidad de cómputo",
+      "Duplica los costos"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Cuál es el propósito de las etiquetas (tags) en Azure?",
+    opciones: [
+      "Cifrar redes",
+      "Organizar recursos por metadatos, como departamento o proyecto",
+      "Crear usuarios",
+      "Reemplazar grupos de recursos"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué portal web permite administrar recursos de Azure gráficamente?",
+    opciones: [
+      "Azure Portal",
+      "SQL Server Management Studio",
+      "Visual Studio Code",
+      "Microsoft Word"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué herramienta de línea de comandos permite administrar Azure?",
+    opciones: [
+      "Azure CLI",
+      "Task Manager",
+      "File Explorer",
+      "Control Panel"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio ayuda a migrar servidores, bases de datos y aplicaciones a Azure?",
+    opciones: [
+      "Azure Migrate",
+      "Azure Advisor",
+      "Azure Cost Management",
+      "Azure Bastion"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio proporciona escritorios virtuales en la nube?",
+    opciones: [
+      "Azure Virtual Desktop",
+      "Azure Policy",
+      "Azure Key Vault",
+      "Azure DNS"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio permite acceso seguro a máquinas virtuales desde el portal sin exponer RDP/SSH públicamente?",
+    opciones: [
+      "Azure Bastion",
+      "Azure CDN",
+      "Azure Site Recovery",
+      "Azure Files"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio DNS administra nombres de dominio en Azure?",
+    opciones: [
+      "Azure DNS",
+      "Azure DevOps",
+      "Azure Cost Management",
+      "Azure Logic Apps"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué servicio se usa para automatizar flujos de trabajo e integrar sistemas?",
+    opciones: [
+      "Azure Logic Apps",
+      "Azure Monitor",
+      "Azure Backup",
+      "Azure RBAC"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Cuál es una característica de la responsabilidad compartida en la nube?",
+    opciones: [
+      "El cliente nunca tiene responsabilidades",
+      "El proveedor y el cliente comparten responsabilidades según el servicio",
+      "Todo es responsabilidad del cliente",
+      "Solo aplica a SaaS"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "En SaaS, normalmente el cliente administra principalmente:",
+    opciones: [
+      "El hardware físico",
+      "La plataforma de virtualización",
+      "Los datos y la configuración de usuarios",
+      "El centro de datos completo"
+    ],
+    correcta: 2
+  },
+  {
+    pregunta: "¿Qué servicio se puede usar para análisis de grandes volúmenes de datos en Azure?",
+    opciones: [
+      "Azure Synapse Analytics",
+      "Azure DNS",
+      "Azure NSG",
+      "Azure RBAC"
+    ],
+    correcta: 0
+  },
+  {
+    pregunta: "¿Qué beneficio ofrecen las Reserved Instances?",
+    opciones: [
+      "Más almacenamiento gratis ilimitado",
+      "Reducir costos en cargas estables a largo plazo",
+      "Eliminar la necesidad de licencias",
+      "Cambiar de región automáticamente"
+    ],
+    correcta: 1
+  },
+  {
+    pregunta: "¿Qué opción describe mejor el modelo de pago por uso en Azure?",
+    opciones: [
+      "Siempre se paga una sola vez",
+      "Se paga según los recursos consumidos",
+      "Es obligatorio contratar 10 años",
+      "No depende del consumo"
+    ],
+    correcta: 1
+  }
+];
+
+    const claveAdministrador = "Admin123";
+    const imagenAprobado = "imagenes/aprobado.png";
+    const imagenReprobado = "imagenes/reprobado.png";
+    const notaMinimaAprobacion = 70;
+
+    let tiempoRestante = 1200;
+    let temporizador;
+    let clicsTitulo = 0;
+    let respuestasUsuario = [];
+
+    const formularioPreguntas = document.getElementById("formularioPreguntas");
+    const totalPreguntasSpan = document.getElementById("totalPreguntas");
+    const respondidasSpan = document.getElementById("respondidas");
+    const tiempoSpan = document.getElementById("tiempo");
+
+    const audioEvaluacion = document.getElementById("audioEvaluacion");
+    const audioAprobado = document.getElementById("audioAprobado");
+    const audioReprobado = document.getElementById("audioReprobado");
+
+    totalPreguntasSpan.textContent = preguntas.length;
+
+    function cargarPreguntas() {
+      formularioPreguntas.innerHTML = "";
+
+      preguntas.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "pregunta";
+
+        let opcionesHTML = "";
+        item.opciones.forEach((opcion, i) => {
+          opcionesHTML += `
+            <div class="opcion">
+              <label>
+                <input type="radio" name="pregunta${index}" value="${i}" onchange="actualizarProgreso()">
+                ${opcion}
+              </label>
+            </div>
+          `;
+        });
+
+        div.innerHTML = `
+          <h3>${index + 1}. ${item.pregunta}</h3>
+          ${opcionesHTML}
+        `;
+
+        formularioPreguntas.appendChild(div);
+      });
+    }
+
+    function iniciarEvaluacion() {
+      const nombre = document.getElementById("nombre").value.trim();
+
+      if (nombre === "") {
+        alert("Por favor, escriba el nombre del estudiante.");
+        return;
+      }
+
+      tiempoRestante = 1200;
+      respuestasUsuario = [];
+      document.getElementById("adminPanel").style.display = "none";
+      document.getElementById("detalleRespuestas").innerHTML = "";
+
+      document.getElementById("pantallaInicial").classList.add("oculto");
+      document.getElementById("pantallaEvaluacion").classList.remove("oculto");
+      document.getElementById("resultado").style.display = "none";
+
+      cargarPreguntas();
+      actualizarProgreso();
+      actualizarTiempo();
+      iniciarTemporizador();
+
+      audioAprobado.pause();
+      audioReprobado.pause();
+      audioAprobado.currentTime = 0;
+      audioReprobado.currentTime = 0;
+
+      audioEvaluacion.volume = 0.3;
+      audioEvaluacion.play().catch(() => {});
+    }
+
+    function iniciarTemporizador() {
+      clearInterval(temporizador);
+
+      temporizador = setInterval(() => {
+        tiempoRestante--;
+        actualizarTiempo();
+
+        if (tiempoRestante <= 0) {
+          clearInterval(temporizador);
+          finalizarEvaluacion();
+        }
+      }, 1000);
+    }
+
+    function actualizarTiempo() {
+      const minutos = Math.floor(tiempoRestante / 60);
+      const segundos = tiempoRestante % 60;
+      tiempoSpan.textContent =
+        String(minutos).padStart(2, "0") + ":" + String(segundos).padStart(2, "0");
+    }
+
+    function actualizarProgreso() {
+      let respondidas = 0;
+
+      preguntas.forEach((_, index) => {
+        const respuesta = document.querySelector(`input[name="pregunta${index}"]:checked`);
+        if (respuesta) {
+          respondidas++;
+        }
+      });
+
+      respondidasSpan.textContent = respondidas;
+    }
+
+    function finalizarEvaluacion() {
+      clearInterval(temporizador);
+
+      let correctas = 0;
+      respuestasUsuario = [];
+
+      preguntas.forEach((item, index) => {
+        const respuesta = document.querySelector(`input[name="pregunta${index}"]:checked`);
+        const seleccionada = respuesta ? parseInt(respuesta.value) : null;
+
+        respuestasUsuario.push({
+          pregunta: item.pregunta,
+          seleccionada: seleccionada,
+          correcta: item.correcta,
+          opciones: item.opciones
+        });
+
+        if (seleccionada === item.correcta) {
+          correctas++;
+        }
+      });
+
+      const nota = Math.round((correctas / preguntas.length) * 100);
+      const aprobo = nota >= notaMinimaAprobacion;
+
+      document.getElementById("pantallaEvaluacion").classList.add("oculto");
+      document.getElementById("resultado").style.display = "block";
+      document.getElementById("resultado").className = aprobo ? "resultado aprobado" : "resultado reprobado";
+
+      document.getElementById("nombreMostrado").textContent = document.getElementById("nombre").value;
+      document.getElementById("notaFinal").textContent = nota + " / 100";
+      document.getElementById("mensajeFinal").textContent = aprobo ? "¡Aprobó la evaluación!" : "Reprobó la evaluación";
+      document.getElementById("imagenResultado").src = aprobo ? imagenAprobado : imagenReprobado;
+
+      audioEvaluacion.pause();
+      audioEvaluacion.currentTime = 0;
+
+      audioAprobado.pause();
+      audioReprobado.pause();
+      audioAprobado.currentTime = 0;
+      audioReprobado.currentTime = 0;
+
+      if (aprobo) {
+        audioAprobado.volume = 0.5;
+        audioAprobado.play().catch(() => {});
+      } else {
+        audioReprobado.volume = 0.5;
+        audioReprobado.play().catch(() => {});
+      }
+    }
+
+    document.getElementById("titulo").addEventListener("click", function () {
+      clicsTitulo++;
+
+      if (clicsTitulo === 5) {
+        clicsTitulo = 0;
+        const clave = prompt("Ingrese la clave de administrador:");
+
+        if (clave === claveAdministrador) {
+          mostrarPanelAdmin();
+        } else {
+          alert("Clave incorrecta.");
+        }
+      }
+    });
+
+    function mostrarPanelAdmin() {
+      if (respuestasUsuario.length === 0) {
+        alert("Todavía no hay resultados para mostrar.");
+        return;
+      }
+
+      const panel = document.getElementById("adminPanel");
+      const detalle = document.getElementById("detalleRespuestas");
+
+      detalle.innerHTML = "";
+
+      respuestasUsuario.forEach((item) => {
+        const esCorrecta = item.seleccionada === item.correcta;
+
+        const textoSeleccionada = item.seleccionada !== null
+          ? item.opciones[item.seleccionada]
+          : "No respondió";
+
+        const textoCorrecta = item.opciones[item.correcta];
+
+        const div = document.createElement("div");
+        div.className = "detalle-item";
+        div.innerHTML = `
+          <p><strong>${item.pregunta}</strong></p>
+          <p>Respondió: <span class="${esCorrecta ? 'correcta' : 'incorrecta'}">${textoSeleccionada}</span></p>
+          <p>Correcta: <span class="correcta">${textoCorrecta}</span></p>
+        `;
+
+        detalle.appendChild(div);
+      });
+
+      panel.style.display = "block";
+      panel.scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>
+
