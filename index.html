@@ -230,7 +230,7 @@
 
     <div id="pantallaEvaluacion" class="oculto">
       <div class="info-superior">
-        <div class="temporizador">Tiempo restante: <span id="tiempo">20:00</span></div>
+        <div class="temporizador">Tiempo restante: <span id="tiempo">40:00</span></div>
         <div class="progreso">Respondidas: <span id="respondidas">0</span> / <span id="totalPreguntas">0</span></div>
       </div>
 
@@ -875,7 +875,7 @@ const preguntas = [
     const imagenReprobado = "imagenes/reprobado.png";
     const notaMinimaAprobacion = 70;
 
-    let tiempoRestante = 1200;
+    let tiempoRestante = 2400;
     let temporizador;
     let clicsTitulo = 0;
     let respuestasUsuario = [];
@@ -927,7 +927,7 @@ const preguntas = [
         return;
       }
 
-      tiempoRestante = 1200;
+      tiempoRestante = 2400;
       respuestasUsuario = [];
       document.getElementById("adminPanel").style.display = "none";
       document.getElementById("detalleRespuestas").innerHTML = "";
